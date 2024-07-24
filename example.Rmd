@@ -1,0 +1,78 @@
+---
+title: "Ayundantía 2: Visualización de Datos"
+author: |
+  **INTRODUCCIÓN A LOS MÉTODOS CUANTITATIVOS EN EDUCACIÓN**  
+  EDU4045  
+  Facultad de Educación, UC  
+  Profesor: Ernesto Treviño  
+  Ayudantes: Carmen Taveras, Catalina Miranda
+output: html_document
+editor_options: 
+  markdown: 
+    wrap: 72
+---
+
+\`\`\`{r setup, include=FALSE} knitr::opts_chunk\$set(echo = TRUE)
+
+# Librerías
+
+library(readxl) \# sirve abrir archivos .xls library(dplyr) \# sirve
+para hacer manipulaciones a los datos library(tidyverse) \# sirve para
+hacer manipulaciones a los datos library(ggplot2) \# sirve para hacer
+figuras y gráficos library(writexl) \# sirve para guardar archivos de R
+a .xlsx library(psych) #sirve para correr estadisticos descriptivos
+library(RColorBrewer) #sirve para ver los colores en R
+
+# Verificar directorio de trabajo
+
+getwd()
+
+# Cargar Base de Datos
+
+data \<- read_excel("votacion_municipal.xlsx") data \|\> glimpse()
+#inspeccionar datos str(data) \# inspeccionar datos
+
+# Objetivo 1: Explorar Estadísticos Descriptivos (ED)
+
+base1 \<- data %\>% select(conoc_civic, edad) base1 \|\> glimpse()
+descriptivos \<- describe(base1)
+write_xlsx(descriptivos,"descriptivos.xlsx") \# esta tabla la pueden
+editar en excel al formato APA 7
+
+# Estadísticos descriptivos según género
+
+base2\<- data %\>% select(genero, conoc_civic, edad) base2 \<-
+mutate(base2, genero_factor = factor(base2\$genero, labels = c("Hombre",
+"Mujer"))) base2_des \<- base2 %\>%\
+group_by(genero_factor) %\>%\
+summarise( media = mean(conoc_civic, na.rm = TRUE), \# Agregar
+media/promedio mediana = median(conoc_civic, na.rm = TRUE), \# Agregar
+mediana q1 = quantile(conoc_civic, probs = 0.25, na.rm = TRUE), \#
+Agregar cuartil 1 (Q1) des = sd(conoc_civic, na.rm = TRUE), \# Agregar
+desviacion estandar max = max(conoc_civic, na.rm = TRUE), \# Agregar
+maximo min = min(conoc_civic, na.rm = TRUE), \# Agregar minimo rango =
+max(conoc_civic) - min(conoc_civic), #Agregar rango N = n(), \# Agregar
+N total (muestra total) porcentaje = n()/30 #Agregar porcentaje, por qué
+dividimos entre 30? ) write_xlsx(base2_des,"descriptivos_genero.xlsx")
+\# esta tabla la pueden editar en excel al formato APA 7
+
+# Objetivo 2: Visualización de datos: Histograma
+
+# Calculamos los límites superiores e inferiores para 1 y 2 DE
+
+sup \<-mean(base2$conoc_civic, na.rm = T)+ sd(base2$conoc_civic, na.rm =
+T) inf \<-mean(base2$conoc_civic, na.rm = T)- sd(base2$conoc_civic,
+na.rm = T)
+sup2\<-mean(base2$conoc_civic, na.rm = T)+2*sd(base2$conoc_civic, na.rm
+= T) inf2\<-mean(base2$conoc_civic, na.rm = T)-2*sd(base2$conoc_civic,
+na.rm = T)
+
+hist_preg2 \<- ggplot(base2, aes(x=conoc_civic)) +
+geom_histogram(fill="pink",colour="pink4", bins = 30) + \# Adjust 'bins'
+as needed theme_minimal() + geom_vline(aes(xintercept =
+mean(conoc_civic, na.rm = TRUE)), linetype="dotdash", size=1,
+colour="violet") + geom_vline(aes(xintercept = median(conoc_civic, na.rm
+= TRUE)), linetype="dotdash", size=1, colour="hotpink") +
+geom_vline(aes(xintercept = sup), linetype="dotdash", size=1,
+colour="plum") + geom_vline(aes(xintercept = inf), linetype="dotdash",
+size=1,
